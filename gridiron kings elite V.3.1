@@ -1,0 +1,115 @@
+!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>🏈 Gridiron Kings Elite v3.1 🏈</title>
+    <style>
+        body { margin:0; background:#000; color:#fff; font-family:Arial; overflow:hidden; }
+        #intro { position:fixed; top:0; left:0; width:100%; height:100%; background:#0a0a0a; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:10; }
+        .logo { font-size:80px; color:#ff0000; font-weight:bold; letter-spacing:10px; }
+        .title { font-size:100px; color:#ffd700; text-shadow:0 0 40px #ff0000; }
+        #spinningBall { font-size:200px; animation: spin 3s linear infinite; }
+        @keyframes spin { from { transform:rotate(0deg); } to { transform:rotate(360deg); } }
+        .press { font-size:30px; color:#ffd700; animation: pulse 1.5s infinite; }
+        button { background:gold; color:black; padding:15px 40px; font-size:24px; border:none; border-radius:12px; margin:15px; cursor:pointer; }
+        button:hover { background:#ff0; }
+        canvas { border:8px solid gold; box-shadow:0 0 40px gold; }
+        #commentary { position:absolute; top:40%; left:50%; transform:translate(-50%,-50%); font-size:70px; font-weight:bold; color:#ffd700; text-shadow:0 0 30px #ff0000; pointer-events:none; opacity:0; transition:0.6s; z-index:300; }
+    </style>
+</head>
+<body>
+
+<div id="intro">
+    <div class="logo">EA SPORTS</div>
+    <div class="title">GRIDIRON KINGS ELITE</div>
+    <div id="spinningBall">🏈</div>
+    <div class="press">PRESS ANY KEY TO JOIN THE GAME</div>
+</div>
+
+<div id="gameContainer" style="display:none">
+    <canvas id="c" width="1400" height="700"></canvas>
+    <div id="hud"></div>
+    <div id="commentary"></div>
+</div>
+
+<audio id="bgMusic" loop></audio>
+
+<script>
+// =============== FULL GAME CODE ===============
+const canvas = document.getElementById("c");
+const ctx = canvas.getContext("2d");
+let game = {screen:'intro'};
+let p1 = {x:200, y:350, speed:5.5, color:'#ff0000', num:1, name:'Milo', hasBall:true};
+let p2 = {x:1200, y:350, speed:5.5, color:'#00aaff', num:99, name:'Opponent', hasBall:false};
+let ball = {x:200, y:350, dx:0, dy:0, inAir:false};
+let music = document.getElementById('bgMusic');
+let commentary = document.getElementById('commentary');
+let time = 0;
+
+const maddenLines = ["TOUCHDOWN!", "WHAT A HIT!", "GHOST CUT!", "TRUCKED HIM!", "HE'S GOT IT!", "BIG TIME PLAY!", "UNBELIEVABLE!"];
+
+function speak(text) {
+    const u = new SpeechSynthesisUtterance(text);
+    u.pitch = 0.95; u.rate = 1.05;
+    speechSynthesis.speak(u);
+}
+
+function showCommentary(text) {
+    commentary.textContent = text;
+    commentary.style.opacity = 1;
+    setTimeout(() => commentary.style.opacity = 0, 2000);
+    speak(text);
+}
+
+// Intro
+document.addEventListener('keydown', () => {
+    if (game.screen === 'intro') {
+        document.getElementById('intro').style.display = 'none';
+        document.getElementById('gameContainer').style.display = 'block';
+        game.screen = 'game';
+        requestAnimationFrame(draw);
+    }
+});
+
+// Music controls (add to menu later if needed)
+function playMusic(file) {
+    music.src = file;
+    music.play().catch(() => alert("Put your 3 MP3 files in the same folder!"));
+}
+
+// Simple game loop with commentary
+function draw() {
+    ctx.clearRect(0,0,1400,700);
+    // field
+    ctx.fillStyle = "#0b6623"; ctx.fillRect(0,0,1400,700);
+    ctx.strokeStyle = "white";
+    for (let i = 0; i < 1400; i += 50) {
+        ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,700); ctx.stroke();
+    }
+
+    // players
+    ctx.fillStyle = p1.color; ctx.beginPath(); ctx.arc(p1.x, p1.y, 25, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = p2.color; ctx.beginPath(); ctx.arc(p2.x, p2.y, 25, 0, Math.PI*2); ctx.fill();
+
+    // ball
+    ctx.fillStyle = "brown"; ctx.beginPath(); ctx.ellipse(ball.x, ball.y, 15, 10, 0, 0, Math.PI*2); ctx.fill();
+
+    // simple movement example
+    if (p1.x < 1350) p1.x += 2;
+
+    if (p1.x > 1300) {
+        showCommentary("TOUCHDOWN!");
+        p1.x = 200;
+    }
+
+    requestAnimationFrame(draw);
+}
+
+// Start music automatically when game begins
+setTimeout(() => {
+    if (game.screen === 'game') playMusic("luther.mp3");
+}, 1000);
+
+</script>
+</body>
+</html>
